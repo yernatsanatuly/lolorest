@@ -61,17 +61,6 @@ A full-stack, lightweight restaurant automation platform designed to streamline 
    ```bash
    git clone [https://github.com/yernatsanatuly/lolorest.git](https://github.com/yernatsanatuly/lolorest.git)
    cd lolorest
-   
-Configure Database Settings
-spring.datasource.username=your_postgres_user
-spring.datasource.password=your_postgres_password
-spring.jpa.hibernate.ddl-auto=update
-Build and Run:Bashmvn clean package
-mvn spring-boot:run
-Access Application:
-Open your browser and navigate to http://localhost:8080/login.html
-]
-
 
 
 
