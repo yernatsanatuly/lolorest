@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOLOREST — Вход в систему</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --primary-blue: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 36px 32px;
+            width: 100%; max-width: 380px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo {
+            text-align: center; font-size: 26px; font-weight: 700;
+            color: var(--primary-blue); letter-spacing: 1px; margin-bottom: 6px;
+        }
+
+        .auth-title {
+            text-align: center; font-size: 14px; color: var(--text-muted);
+            margin-bottom: 24px; font-weight: 500;
+        }
+
+        .form-group {
+            display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px;
+        }
+
+        .form-group label {
+            font-size: 13px; font-weight: 500; color: var(--text-muted);
+        }
+
+        .form-group input {
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px; outline: none; transition: 0.2s;
+            background: #ffffff;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn {
+            width: 100%; padding: 12px; margin-top: 6px;
+            border: none; background: var(--primary-blue); color: #ffffff;
+            font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+            border-radius: 8px; cursor: pointer; transition: 0.2s;
+        }
+
+        .btn:hover { background: var(--primary-hover); }
+
+        .error-message {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            color: var(--danger);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 18px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-card">
+    <div class="logo">LOLOREST</div>
+    <div class="auth-title">Авторизация в системе</div>
+
+    <div class="error-message" id="errorMessage"></div>
+
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="username">Логин</label>
+            <input type="text" id="username" required autocomplete="username" placeholder="Введите логин">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Пароль</label>
+            <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••">
+        </div>
+
+        <button type="submit" class="btn">Войти</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const errorDiv = document.getElementById('errorMessage');
+        errorDiv.style.display = 'none';
+
+        const payload = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+        };
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+
+                if (data.role === 'ROLE_ADMIN') {
+                    window.location.href = '/dishes.html';
+                } else if (data.role === 'ROLE_WAITER') {
+                    window.location.href = '/orders.html';
+                } else {
+                    window.location.href = '/orders.html';
+                }
+            } else {
+                const errorText = await response.text();
+                errorDiv.innerText = errorText || 'Неверный логин или пароль';
+                errorDiv.style.display = 'block';
+            }
+        } catch (err) {
+            errorDiv.innerText = 'Ошибка соединения с сервером';
+            errorDiv.style.display = 'block';
+        }
+    });
+</script>
+
+</body>
+</html>

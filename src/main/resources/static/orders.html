@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOLOREST — Заказы</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --primary-blue: #2563eb;
+            --primary-hover: #1d4ed8;
+            --light-blue: #eff6ff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success: #10b981;
+            --success-hover: #059669;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0; padding: 0; background-color: var(--bg-color);
+            color: var(--text-main); font-family: 'Inter', sans-serif;
+        }
+
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 18px 40px; background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .logo { font-size: 22px; font-weight: 700; color: var(--primary-blue); letter-spacing: 1px; }
+        .nav-links { display: flex; gap: 24px; }
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 14px; font-weight: 500; transition: 0.2s; }
+        .nav-links a.active, .nav-links a:hover { color: var(--primary-blue); font-weight: 600; }
+
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px 60px 20px; }
+
+        .header-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 24px;
+        }
+        h1 { font-size: 24px; font-weight: 700; margin: 0; color: var(--text-main); }
+
+        .orders-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;
+        }
+
+        .order-card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 14px; padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+
+        .order-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 12px; border-bottom: 1px solid var(--border-color);
+            margin-bottom: 14px;
+        }
+        .order-id { font-size: 18px; font-weight: 700; }
+        .order-status {
+            font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .status-CREATED { background: #dbeafe; color: #1e40af; }
+        .status-IN_PROGRESS { background: #fef3c7; color: #92400e; }
+        .status-COMPLETED { background: #dcfce7; color: #166534; }
+        .status-CANCELLED { background: #fef2f2; color: #991b1b; }
+
+        .order-items { margin-bottom: 16px; min-height: 60px; }
+        .empty-text { color: var(--text-muted); font-size: 14px; text-align: center; margin: 20px 0; }
+
+        .item-row {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 14px; margin-bottom: 8px; padding-bottom: 6px;
+            border-bottom: 1px dashed #f1f5f9;
+        }
+        .item-name { font-weight: 500; }
+        .item-price { color: var(--text-muted); font-size: 13px; }
+
+        .order-total {
+            display: flex; justify-content: space-between; align-items: center;
+            font-weight: 700; font-size: 16px; padding: 12px 0;
+            border-top: 2px solid var(--border-color); margin-top: auto;
+        }
+
+        .card-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+
+        .btn {
+            padding: 10px 16px; border: none; background: var(--primary-blue); color: #ffffff;
+            font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; border-radius: 8px;
+            cursor: pointer; transition: all 0.2s ease; text-align: center; width: 100%;
+        }
+        .btn:hover { background: var(--primary-hover); }
+        .btn-secondary { background: var(--light-blue); color: var(--primary-blue); border: 1px dashed var(--primary-blue); }
+        .btn-secondary:hover { background: #dbeafe; }
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: var(--success-hover); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; transition: opacity 0.2s ease;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+
+        .modal {
+            background: #ffffff; border-radius: 16px; padding: 24px;
+            width: 100%; max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+        .form-group label { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+        .form-group select, .form-group input {
+            padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px;
+            font-family: 'Inter'; font-size: 14px; outline: none; width: 100%;
+        }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo">LOLOREST</div>
+    <div class="nav-links">
+        <a href="dishes.html">Меню</a>
+        <a href="orders.html" class="active">Заказы</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="header-actions">
+        <h1>Управление Заказами</h1>
+        <button class="btn" style="width: auto;" onclick="createNewOrder()">+ Новый заказ</button>
+    </div>
+
+    <div class="orders-grid" id="ordersGrid"></div>
+</div>
+
+<div class="modal-overlay" id="addItemModal">
+    <div class="modal">
+        <h3 id="modalOrderTitle" style="margin-top:0; margin-bottom: 16px;">Добавить блюдо</h3>
+        <form id="addItemForm">
+            <input type="hidden" id="targetOrderId">
+
+            <div class="form-group">
+                <label for="dishSelect">Выберите блюдо</label>
+                <select id="dishSelect" required></select>
+            </div>
+
+            <div class="form-group">
+                <label for="itemQuantity">Количество</label>
+                <input type="number" id="itemQuantity" value="1" min="1" max="50" required>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                <button type="submit" class="btn">Добавить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const ORDERS_API = '/lolorest/order';
+    const DISHES_API = '/lolorest/dish';
+
+    async function init() {
+        await loadDishes();
+        await loadOrders();
+    }
+
+    async function loadDishes() {
+        try {
+            const res = await fetch(DISHES_API);
+            const dishes = await res.json();
+
+            const select = document.getElementById('dishSelect');
+            select.innerHTML = dishes
+                .filter(d => d.status === 'AVAILABLE')
+                .map(d => `<option value="${d.id}">${d.name} (${d.price.toLocaleString()} ₸)</option>`)
+                .join('');
+        } catch (e) {
+            console.error('Ошибка загрузки меню', e);
+        }
+    }
+
+    async function loadOrders() {
+        try {
+            const res = await fetch(ORDERS_API);
+            const orders = await res.json();
+            const grid = document.getElementById('ordersGrid');
+            grid.innerHTML = '';
+
+            if (orders.length === 0) {
+                grid.innerHTML = '<div class="empty-text" style="grid-column: 1/-1;">Активных заказов нет</div>';
+                return;
+            }
+
+            orders.forEach(o => {
+                const itemsList = (o.items && o.items.length > 0)
+                    ? o.items.map(i => `
+                        <div class="item-row">
+                            <span class="item-name">${i.dishName || i.dish?.dishName || i.dish?.name} x${i.quantity}</span>
+                            <span class="item-price">${((i.price || i.dish?.dishPrice || i.dish?.price || 0) * i.quantity).toLocaleString()} ₸</span>
+                        </div>`).join('')
+                    : '<div class="empty-text">Заказ пуст</div>';
+
+                const total = o.items ? o.items.reduce((sum, i) => sum + ((i.price || i.dish?.dishPrice || i.dish?.price || 0) * i.quantity), 0) : 0;
+
+
+                const isEditable = o.status === 'CREATED' || o.status === 'IN_PROGRESS';
+
+                grid.innerHTML += `
+                    <div class="order-card">
+                        <div>
+                            <div class="order-header">
+                                <span class="order-id">Заказ #${o.id}</span>
+                                <span class="order-status status-${o.status}">${o.status}</span>
+                            </div>
+                            <div class="order-items">${itemsList}</div>
+                        </div>
+
+                        <div>
+                            <div class="order-total">
+                                <span>Итого:</span>
+                                <span>${total.toLocaleString()} ₸</span>
+                            </div>
+
+                            ${isEditable ? `
+                                <div class="card-actions">
+                                    <button class="btn btn-secondary" onclick="openAddModal(${o.id})">+ Добавить блюдо</button>
+                                    <button class="btn btn-success" onclick="completeOrder(${o.id})">Завершить заказ</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        } catch (e) {
+            console.error('Ошибка загрузки заказов', e);
+        }
+    }
+
+    async function createNewOrder() {
+        await fetch(ORDERS_API, { method: 'POST' });
+        loadOrders();
+    }
+
+    function openAddModal(orderId) {
+        document.getElementById('targetOrderId').value = orderId;
+        document.getElementById('modalOrderTitle').innerText = `Добавить в Заказ #${orderId}`;
+        document.getElementById('itemQuantity').value = 1;
+        document.getElementById('addItemModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('addItemModal').classList.remove('active');
+    }
+
+    document.getElementById('addItemForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const orderId = document.getElementById('targetOrderId').value;
+        const dishId = document.getElementById('dishSelect').value;
+        const quantity = document.getElementById('itemQuantity').value;
+
+        await fetch(`${ORDERS_API}/${orderId}/items?dishId=${dishId}&quantity=${quantity}`, {
+            method: 'POST'
+        });
+
+        closeModal();
+        loadOrders();
+    });
+
+    async function completeOrder(orderId) {
+        await fetch(`${ORDERS_API}/${orderId}/complete`, {
+            method: 'PATCH'
+        });
+        loadOrders();
+    }
+
+    init();
+</script>
+</body>
+</html>
